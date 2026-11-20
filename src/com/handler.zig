@@ -44,7 +44,6 @@ pub const Handler = struct {
         .QueryInterface = thumbnailQueryInterface,
         .AddRef = thumbnailAddRef,
         .Release = thumbnailRelease,
-        .Initialize = thumbnailInitialize,
         .GetThumbnail = getThumbnail,
     };
     const vtable_preview = IPreviewHandler.VTable{
@@ -187,17 +186,6 @@ pub const Handler = struct {
 
     fn thumbnailRelease(interface: *IThumbnailProvider) callconv(abi.WINAPI) u32 {
         return release(selfFromThumbnail(interface));
-    }
-
-    fn thumbnailInitialize(interface: *IThumbnailProvider, item: *abi.IShellItem, cache: *abi.IThumbnailCache) callconv(abi.WINAPI) HRESULT {
-        _ = cache;
-        const handler = selfFromThumbnail(interface);
-        var stream_ptr: ?*anyopaque = null;
-        const result = item.vtable.BindToHandler(item, null, &config.stream_bhid, &config.stream_iid, &stream_ptr);
-        if (result != abi.S_OK) return result;
-        const stream = @as(?*IStream, @ptrCast(@alignCast(stream_ptr))) orelse return abi.E_FAIL;
-        handler.adoptStream(stream);
-        return abi.S_OK;
     }
 
     fn previewAddRef(interface: *IPreviewHandler) callconv(abi.WINAPI) u32 {
