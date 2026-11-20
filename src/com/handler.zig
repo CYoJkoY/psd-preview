@@ -44,6 +44,7 @@ pub const Handler = struct {
         .QueryInterface = thumbnailQueryInterface,
         .AddRef = thumbnailAddRef,
         .Release = thumbnailRelease,
+        .Initialize = thumbnailInitialize,
         .GetThumbnail = getThumbnail,
     };
     const vtable_preview = IPreviewHandler.VTable{
@@ -126,6 +127,16 @@ pub const Handler = struct {
         handler.pixels_height = 0;
     }
 
+    /// Stores an already-referenced stream, dropping any previous document.
+    /// Callers that receive a fresh reference (for example `BindToHandler`)
+    /// pass it straight in; `initializeStream` adds a reference first.
+    fn adoptStream(handler: *Handler, stream: *IStream) void {
+        if (handler.stream) |existing| _ = existing.vtable.Release(existing);
+        handler.stream = null;
+        handler.clearDocument();
+        handler.stream = stream;
+    }
+
     fn queryInterface(handler: *Handler, iid: *const GUID, object: *?*anyopaque) HRESULT {
         if (!supportedInterface(iid)) {
             object.* = null;
@@ -165,11 +176,8 @@ pub const Handler = struct {
     fn initializeStream(interface: *IInitializeWithStream, stream: *IStream, mode: u32) callconv(abi.WINAPI) HRESULT {
         const handler = selfFromInitialize(interface);
         if (mode != 0) return abi.E_INVALIDARG;
-        if (handler.stream) |existing| _ = existing.vtable.Release(existing);
-        handler.stream = null;
-        handler.clearDocument();
         _ = stream.vtable.AddRef(stream);
-        handler.stream = stream;
+        handler.adoptStream(stream);
         return abi.S_OK;
     }
 
@@ -179,6 +187,17 @@ pub const Handler = struct {
 
     fn thumbnailRelease(interface: *IThumbnailProvider) callconv(abi.WINAPI) u32 {
         return release(selfFromThumbnail(interface));
+    }
+
+    fn thumbnailInitialize(interface: *IThumbnailProvider, item: *abi.IShellItem, cache: *abi.IThumbnailCache) callconv(abi.WINAPI) HRESULT {
+        _ = cache;
+        const handler = selfFromThumbnail(interface);
+        var stream_ptr: ?*anyopaque = null;
+        const result = item.vtable.BindToHandler(item, null, &config.stream_bhid, &config.stream_iid, &stream_ptr);
+        if (result != abi.S_OK) return result;
+        const stream = @as(?*IStream, @ptrCast(@alignCast(stream_ptr))) orelse return abi.E_FAIL;
+        handler.adoptStream(stream);
+        return abi.S_OK;
     }
 
     fn previewAddRef(interface: *IPreviewHandler) callconv(abi.WINAPI) u32 {

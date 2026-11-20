@@ -71,7 +71,31 @@ pub const IThumbnailProvider = extern struct {
         QueryInterface: *const fn (*IThumbnailProvider, *const GUID, *?*anyopaque) callconv(WINAPI) HRESULT,
         AddRef: *const fn (*IThumbnailProvider) callconv(WINAPI) u32,
         Release: *const fn (*IThumbnailProvider) callconv(WINAPI) u32,
+        Initialize: *const fn (*IThumbnailProvider, *IShellItem, *IThumbnailCache) callconv(WINAPI) HRESULT,
         GetThumbnail: *const fn (*IThumbnailProvider, u32, *?HBITMAP, *WTS_ALPHATYPE) callconv(WINAPI) HRESULT,
+    };
+};
+
+/// Opaque: only used as a pointer type for `IThumbnailProvider.Initialize`;
+/// the handler never calls through it.
+pub const IThumbnailCache = opaque {};
+
+/// Opaque: only used as a pointer type for `IShellItem.BindToHandler`.
+pub const IBindCtx = opaque {};
+
+/// Minimal `IShellItem`: only `BindToHandler` (slot 3) is called; the rest
+/// are placeholders that keep the layout honest.
+pub const IShellItem = extern struct {
+    vtable: *const VTable,
+    pub const VTable = extern struct {
+        QueryInterface: *const fn (*IShellItem, *const GUID, *?*anyopaque) callconv(WINAPI) HRESULT,
+        AddRef: *const fn (*IShellItem) callconv(WINAPI) u32,
+        Release: *const fn (*IShellItem) callconv(WINAPI) u32,
+        BindToHandler: *const fn (*IShellItem, ?*IBindCtx, *const GUID, *const GUID, *?*anyopaque) callconv(WINAPI) HRESULT,
+        GetParent: *const anyopaque,
+        GetDisplayName: *const anyopaque,
+        GetAttributes: *const anyopaque,
+        Compare: *const anyopaque,
     };
 };
 
@@ -128,4 +152,17 @@ test "guidEql compares GUID values, not pointer addresses" {
     try std.testing.expect(guidEql(&a, &b));
     try std.testing.expect(!guidEql(&a, &c));
     try std.testing.expect(!std.meta.eql(&a, &b));
+}
+
+test "COM vtable layouts match the Windows ABI" {
+    // IThumbnailProvider: IUnknown (3 slots) + Initialize + GetThumbnail.
+    // A missing Initialize slot used to shift GetThumbnail off the vtable
+    // and crash any correct caller with an access violation.
+    try std.testing.expectEqual(5 * @sizeOf(*anyopaque), @sizeOf(IThumbnailProvider.VTable));
+    try std.testing.expectEqual(3 * @sizeOf(*anyopaque), @offsetOf(IThumbnailProvider.VTable, "Initialize"));
+    try std.testing.expectEqual(4 * @sizeOf(*anyopaque), @offsetOf(IThumbnailProvider.VTable, "GetThumbnail"));
+    try std.testing.expectEqual(4 * @sizeOf(*anyopaque), @sizeOf(IInitializeWithStream.VTable));
+    try std.testing.expectEqual(10 * @sizeOf(*anyopaque), @sizeOf(IPreviewHandler.VTable));
+    try std.testing.expectEqual(5 * @sizeOf(*anyopaque), @sizeOf(IClassFactory.VTable));
+    try std.testing.expectEqual(14 * @sizeOf(*anyopaque), @sizeOf(IStream.VTable));
 }

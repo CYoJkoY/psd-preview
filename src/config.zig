@@ -22,6 +22,8 @@ pub const object_with_site_iid = windows.GUID.parse("{FC4801A3-2BA9-11CF-A229-00
 pub const class_factory_iid = windows.GUID.parse("{00000001-0000-0000-C000-000000000046}");
 pub const unknown_iid = windows.GUID.parse("{00000000-0000-0000-C000-000000000046}");
 pub const stream_iid = windows.GUID.parse("{0000000C-0000-0000-C000-000000000046}");
+pub const stream_bhid_text = "{1CEBB3AB-7C10-499A-A417-92CA16C4CB83}";
+pub const stream_bhid = windows.GUID.parse(stream_bhid_text);
 
 pub const max_decode_bytes: usize = 256 * 1024 * 1024;
 /// Keeps dimensions within the range the PSD decoders and GDI paths can
