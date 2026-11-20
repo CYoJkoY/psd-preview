@@ -32,16 +32,19 @@ zig fmt build.zig src     # 格式化（提交前执行）
 
 ## 注册与卸载
 
-当前用户注册（免管理员，推荐）：
+推荐注册（自动模式，优先机器级注册）：
 
 ```powershell
-regsvr32 /s /n /i:user zig-out\bin\psd_preview.dll
-regsvr32 /u /s /n /i:user zig-out\bin\psd_preview.dll
+regsvr32 /s /n /i:auto zig-out\bin\psd_preview.dll
+regsvr32 /u /s /n /i:auto zig-out\bin\psd_preview.dll
 ```
 
 - `DllInstall` 解析 `/i:` 后的参数：`user` 写 `HKCU\Software\Classes`，
-  `machine` 写 `HKLM\Software\Classes`，`auto` 在已提权时优先 `HKLM`
-  并回退 `HKCU`、未提权时只写 `HKCU`；无参数时默认为 `user`。
+  `machine` 写 `HKLM\Software\Classes`，`auto` 优先尝试 `HKLM`，失败
+  时回退 `HKCU`；无参数时默认为 `user`。
+- 注意：Explorer 的缩略图缓存提取宿主看不到仅注册在 HKCU 的处理程序，
+  因此 Explorer 中显示缩略图需要机器级注册（提权安装）。仅注册在 HKCU
+  时直接调用仍能工作，但 Explorer 缩略图和详情窗格预览不会出现。
 - 直接调用 `DllRegisterServer` / `DllUnregisterServer`（不带 `/i:`）走
   `auto` 模式。
 - 注册内容：CLSID `{7B9E4A10-3C82-4F51-9D2A-8E1C6B04F291}` 的

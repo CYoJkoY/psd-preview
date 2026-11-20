@@ -257,7 +257,13 @@ fn resolveRoots(mode: Mode) [2]?Root {
     return switch (mode) {
         .user => .{ .user, null },
         .machine => .{ .machine, null },
-        .auto => if (isElevated()) .{ .machine, .user } else .{ .user, null },
+        // Always try the machine root first: the thumbnail cache
+        // extraction host cannot see per-user (HKCU) registrations, so
+        // a user-only registration leaves Explorer with no thumbnail
+        // even though direct in-process calls work. `register` falls
+        // back to the user root when the machine write fails, so a
+        // non-elevated install still succeeds per-user.
+        .auto => .{ .machine, .user },
     };
 }
 
