@@ -83,10 +83,10 @@ pub const Handler = struct {
     }
 
     fn supportedInterface(iid: *const GUID) bool {
-        return std.meta.eql(iid, &config.unknown_iid) or
-            std.meta.eql(iid, &config.initialize_stream_iid) or
-            std.meta.eql(iid, &config.thumbnail_iid) or
-            std.meta.eql(iid, &config.preview_iid);
+        return abi.guidEql(iid, &config.unknown_iid) or
+            abi.guidEql(iid, &config.initialize_stream_iid) or
+            abi.guidEql(iid, &config.thumbnail_iid) or
+            abi.guidEql(iid, &config.preview_iid);
     }
 
     fn retain(self_object: *Handler) u32 {
@@ -131,9 +131,9 @@ pub const Handler = struct {
             object.* = null;
             return abi.E_NOINTERFACE;
         }
-        if (std.meta.eql(iid, &config.thumbnail_iid)) {
+        if (abi.guidEql(iid, &config.thumbnail_iid)) {
             object.* = @ptrCast(&handler.thumbnail);
-        } else if (std.meta.eql(iid, &config.preview_iid)) {
+        } else if (abi.guidEql(iid, &config.preview_iid)) {
             object.* = @ptrCast(&handler.preview);
         } else {
             object.* = @ptrCast(&handler.initialize);
