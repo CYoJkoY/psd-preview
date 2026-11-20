@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify tag matches build.zig.zon version
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tagVersion = $env:GITHUB_REF_NAME -replace '^v', ''
+          $zon = Get-Content -Raw -LiteralPath 'build.zig.zon'
+          if ($zon -notmatch '(?m)^\s*\.version\s*=\s*"(?<version>[^"]+)"') {
+            throw 'Could not find .version in build.zig.zon'
+          }
+          $zonVersion = $Matches.version
+          Write-Host "Tag version: $tagVersion"
+          Write-Host "build.zig.zon version: $zonVersion"
+          if ($tagVersion -ne $zonVersion) {
+            throw "Tag version '$tagVersion' does not match build.zig.zon version '$zonVersion'. Refusing to build or release."
+          }
+
+      - name: Set up Zig 0.17.1
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.1
+
+      - name: Test
+        run: zig build test --summary all
+
+      - name: Build release DLL
+        run: zig build -Doptimize=ReleaseSafe
+
+      - name: Package DLL
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          $zip = "psd-preview-v$version-x86_64-windows.zip"
+          Compress-Archive -LiteralPath 'zig-out/bin/psd_preview.dll' -DestinationPath $zip
+          Write-Host "Created $zip"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: psd-preview-*-x86_64-windows.zip
+          generate_release_notes: true
