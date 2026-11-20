@@ -17,6 +17,19 @@ zig fmt build.zig src     # 格式化（提交前执行）
 
 目标固定为 `x86_64-windows-gnu`。仓库无第三方依赖。
 
+## CI 与发布
+
+- `.github/workflows/ci.yml`：push 到 `master` 或 Pull Request 时，在
+  `windows-latest` 上用 Zig 0.17.1 执行 `zig fmt --check`、`zig build`
+  与 `zig build test`。
+- `.github/workflows/release.yml`：推送 `v*` 形式的 tag 时触发。工作流
+  先校验 tag 版本（去掉 `v` 前缀）与 `build.zig.zon` 中 `.version` 完全
+  一致，不一致直接失败、不构建不发布；一致才执行测试、ReleaseSafe 构建，
+  并把 `psd_preview.dll` 打包为 `psd-preview-v<版本>-x86_64-windows.zip`
+  发布到对应 GitHub Release。
+- 发版流程：先修改 `build.zig.zon` 的 `.version` 并合入 `master`，再打
+  同版本 tag，例如版本 `0.1.0` 对应 `git tag v0.1.0` 后推送 tag。
+
 ## 注册与卸载
 
 当前用户注册（免管理员，推荐）：
