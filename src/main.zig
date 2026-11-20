@@ -20,7 +20,7 @@ var factory_refs = std.atomic.Value(u32).init(0);
 
 fn factoryQueryInterface(factory: *ClassFactory, iid: *const abi.GUID, object: *?*anyopaque) callconv(abi.WINAPI) abi.HRESULT {
     object.* = null;
-    if (!std.meta.eql(iid, &config.unknown_iid) and !std.meta.eql(iid, &config.class_factory_iid)) return abi.E_NOINTERFACE;
+    if (!abi.guidEql(iid, &config.unknown_iid) and !abi.guidEql(iid, &config.class_factory_iid)) return abi.E_NOINTERFACE;
     object.* = @ptrCast(factory);
     _ = factoryAddRef(factory);
     return abi.S_OK;
@@ -73,7 +73,7 @@ extern "kernel32" fn DisableThreadLibraryCalls(module: *anyopaque) callconv(abi.
 
 pub export fn DllGetClassObject(class_id: *const abi.GUID, iid: *const abi.GUID, object: *?*anyopaque) callconv(abi.WINAPI) abi.HRESULT {
     object.* = null;
-    if (!std.meta.eql(class_id, &config.extension_clsid)) return @bitCast(@as(u32, 0x80040111));
+    if (!abi.guidEql(class_id, &config.extension_clsid)) return @bitCast(@as(u32, 0x80040111));
     return factoryQueryInterface(&class_factory, iid, object);
 }
 

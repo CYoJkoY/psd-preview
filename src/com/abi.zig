@@ -4,6 +4,13 @@ const windows = std.os.windows;
 pub const HRESULT = i32;
 pub const GUID = windows.GUID;
 pub const WINAPI = std.builtin.CallingConvention.winapi;
+
+/// Compares two GUIDs by value. `std.meta.eql` on `*const GUID` compares
+/// pointer addresses, so passing the pointers directly always returns false
+/// and every COM activation / QueryInterface check in this DLL failed.
+pub fn guidEql(a: *const GUID, b: *const GUID) bool {
+    return std.meta.eql(a.*, b.*);
+}
 pub const HWND = windows.HWND;
 pub const HBITMAP = *opaque {};
 pub const RECT = extern struct { left: i32, top: i32, right: i32, bottom: i32 };
@@ -113,3 +120,12 @@ pub const IClassFactory = extern struct {
         LockServer: *const fn (*IClassFactory, i32) callconv(WINAPI) HRESULT,
     };
 };
+
+test "guidEql compares GUID values, not pointer addresses" {
+    const a = GUID.parse("{7B9E4A10-3C82-4F51-9D2A-8E1C6B04F291}");
+    var b = a;
+    const c = GUID.parse("{00000001-0000-0000-C000-000000000046}");
+    try std.testing.expect(guidEql(&a, &b));
+    try std.testing.expect(!guidEql(&a, &c));
+    try std.testing.expect(!std.meta.eql(&a, &b));
+}

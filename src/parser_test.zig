@@ -5,6 +5,7 @@ const color = parser.color_helpers;
 
 test {
     _ = @import("render/thumbnail.zig");
+    _ = @import("com/abi.zig");
 }
 
 fn appendInt(comptime T: type, list: *std.ArrayList(u8), value: T) !void {
