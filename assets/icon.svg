@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="psdPreviewTitle">
+  <title id="psdPreviewTitle">psd-preview</title>
+  <defs>
+    <linearGradient id="ppTile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4F5BF0"/>
+      <stop offset="0.55" stop-color="#2B7BF5"/>
+      <stop offset="1" stop-color="#0FB5D6"/>
+    </linearGradient>
+    <linearGradient id="ppSheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.30"/>
+      <stop offset="0.60" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="ppSheet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EDF3FB"/>
+    </linearGradient>
+    <pattern id="ppChecker" width="48" height="48" patternUnits="userSpaceOnUse">
+      <rect width="48" height="48" fill="#F6F9FD"/>
+      <rect width="24" height="24" fill="#DCE6F2"/>
+      <rect x="24" y="24" width="24" height="24" fill="#DCE6F2"/>
+    </pattern>
+    <clipPath id="ppCanvasClip">
+      <rect x="198" y="166" width="172" height="200" rx="14"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#ppTile)"/>
+  <rect width="512" height="512" rx="112" fill="url(#ppSheen)"/>
+  <rect x="8" y="8" width="496" height="496" rx="106" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="4"/>
+
+  <g transform="translate(4 16)">
+    <!-- layer stack: two offset cards behind the visible canvas -->
+    <rect x="120" y="100" width="200" height="228" rx="20" fill="#FFFFFF" fill-opacity="0.26"/>
+    <rect x="152" y="126" width="200" height="228" rx="20" fill="#FFFFFF" fill-opacity="0.52"/>
+
+    <!-- front layer: transparent canvas -->
+    <rect x="184" y="152" width="200" height="228" rx="20" fill="url(#ppSheet)"/>
+    <g clip-path="url(#ppCanvasClip)">
+      <rect x="198" y="166" width="172" height="200" fill="url(#ppChecker)"/>
+      <circle cx="332" cy="204" r="22" fill="#4F5BF0"/>
+      <path d="M198 366 L252 292 L300 350 L330 316 L370 366 Z" fill="#0FB5D6"/>
+      <path d="M198 366 L232 320 L276 366 Z" fill="#2B7BF5"/>
+    </g>
+    <rect x="184" y="152" width="200" height="228" rx="20" fill="none" stroke="#0B2A4A" stroke-opacity="0.10" stroke-width="4"/>
+  </g>
+</svg>

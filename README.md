@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source srcset="assets/icon.svg" type="image/svg+xml">
+    <img src="assets/icon-256.png" width="128" height="128" alt="psd-preview 图标：叠层 PSD 画布与透明棋盘格缩略图">
+  </picture>
+</p>
+
 # psd-preview
 
 Windows 资源管理器 PSD/PSB 缩略图与预览窗格扩展，使用 Zig 0.17.1 编写。
